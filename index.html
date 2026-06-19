@@ -1,48 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>TaskFlow Pro</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
+
 <body>
+
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
 
     <div class="container">
 
-        <header>
-            <h1>🚀 TaskFlow Pro</h1>
-            <p>Modern Serverless Task Manager</p>
+        <!-- Hero Section -->
+
+        <header class="hero">
+
+            <div class="hero-content">
+
+                <h1>TaskFlow Pro</h1>
+
+                <p>
+                    AWS Serverless Task Management Platform
+                </p>
+
+                <span class="hero-subtitle">
+                    Create • Track • Complete • Manage
+                </span>
+
+            </div>
+
         </header>
 
-        <div class="task-form">
-            <input
-                type="text"
-                id="taskInput"
-                placeholder="Enter a new task..."
-            >
+        <!-- Dashboard Statistics -->
 
-            <button id="createBtn">
-                Create Task
-            </button>
-        </div>
+        <section class="stats-grid">
 
-        <div id="message"></div>
-
-        <div class="stats">
-            <div class="stat-card">
-                <h3>Total Tasks</h3>
+            <div class="stat-card total-card">
+                <h3>📋 Total Tasks</h3>
                 <span id="taskCount">0</span>
             </div>
-        </div>
 
-        <h2>Your Tasks</h2>
+            <div class="stat-card pending-card">
+                <h3>⏳ Pending</h3>
+                <span id="pendingCount">0</span>
+            </div>
 
-        <div id="taskList"></div>
+            <div class="stat-card completed-card">
+                <h3>✅ Completed</h3>
+                <span id="completedCount">0</span>
+            </div>
+
+            <div class="stat-card rate-card">
+                <h3>🔥 Completion</h3>
+                <span id="completionRate">0%</span>
+            </div>
+
+        </section>
+
+        <!-- Create Task Section -->
+
+        <section class="glass-panel create-panel">
+
+            <h2>Create New Task</h2>
+
+            <div class="task-form">
+
+                <input
+                    type="text"
+                    id="taskInput"
+                    placeholder="Enter task name...">
+
+                <button id="createBtn">
+                    Create Task
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- Tasks Section -->
+
+        <section class="tasks-section">
+
+            <h2>Your Tasks</h2>
+
+            <div id="taskList"></div>
+
+        </section>
+
+        <!-- Footer -->
+
+        <footer>
+
+            <h3>Powered By AWS</h3>
+
+            <div class="tech-stack">
+
+                <span>API Gateway</span>
+                <span>Lambda</span>
+                <span>DynamoDB</span>
+                <span>S3</span>
+                <span>CloudFront</span>
+
+            </div>
+
+        </footer>
 
     </div>
 
     <script src="app.js"></script>
 
 </body>
+
 </html>

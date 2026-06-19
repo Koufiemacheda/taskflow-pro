@@ -3,7 +3,11 @@ const API_URL = "https://d2wm9oj5gl.execute-api.us-east-1.amazonaws.com";
 const taskInput = document.getElementById("taskInput");
 const createBtn = document.getElementById("createBtn");
 const taskList = document.getElementById("taskList");
+
 const taskCount = document.getElementById("taskCount");
+const pendingCount = document.getElementById("pendingCount");
+const completedCount = document.getElementById("completedCount");
+const completionRate = document.getElementById("completionRate");
 
 // Load tasks when page opens
 window.onload = loadTasks;
@@ -53,9 +57,32 @@ async function loadTasks() {
 
         const data = await response.json();
 
-        taskCount.textContent = data.count;
+        const tasks = data.tasks || [];
 
-        displayTasks(data.tasks);
+        // Dashboard calculations
+        const pending = tasks.filter(
+            task => task.status === "Pending"
+        ).length;
+
+        const completed = tasks.filter(
+            task => task.status === "Completed"
+        ).length;
+
+        const total = tasks.length;
+
+        const rate =
+            total === 0
+                ? 0
+                : Math.round(
+                    (completed / total) * 100
+                );
+
+        taskCount.textContent = total;
+        pendingCount.textContent = pending;
+        completedCount.textContent = completed;
+        completionRate.textContent = `${rate}%`;
+
+        displayTasks(tasks);
 
     } catch (error) {
 
@@ -69,6 +96,27 @@ function displayTasks(tasks) {
 
     taskList.innerHTML = "";
 
+    // Pending first, completed last
+    tasks.sort((a, b) => {
+
+        if (
+            a.status === "Pending" &&
+            b.status === "Completed"
+        ) {
+            return -1;
+        }
+
+        if (
+            a.status === "Completed" &&
+            b.status === "Pending"
+        ) {
+            return 1;
+        }
+
+        return 0;
+
+    });
+
     tasks.forEach(task => {
 
         const card = document.createElement("div");
@@ -77,7 +125,10 @@ function displayTasks(tasks) {
 
         card.innerHTML = `
             <div class="task-header">
-                <div class="task-name">${task.taskName}</div>
+
+                <div class="task-name">
+                    ${task.taskName}
+                </div>
 
                 <span class="${task.status === 'Completed'
                     ? 'completed'
@@ -86,19 +137,29 @@ function displayTasks(tasks) {
                     ${task.status}
 
                 </span>
+
             </div>
 
             <div class="task-meta">
                 Created: ${task.createdAt}
             </div>
 
+            <div class="task-meta">
+                Task ID: ${task.taskId.substring(0, 8)}...
+            </div>
+
             <div class="task-actions">
 
                 <button
                     class="complete-btn"
-                    onclick="completeTask('${task.taskId}')">
+                    onclick="toggleTaskStatus(
+                        '${task.taskId}',
+                        '${task.status}'
+                    )">
 
-                    Complete
+                    ${task.status === 'Completed'
+                        ? 'Undo'
+                        : 'Mark Complete'}
 
                 </button>
 
@@ -119,8 +180,13 @@ function displayTasks(tasks) {
 
 }
 
-// Update Task
-async function completeTask(taskId) {
+// Toggle Status
+async function toggleTaskStatus(taskId, currentStatus) {
+
+    const newStatus =
+        currentStatus === "Completed"
+            ? "Pending"
+            : "Completed";
 
     try {
 
@@ -131,7 +197,7 @@ async function completeTask(taskId) {
             },
             body: JSON.stringify({
                 taskId: taskId,
-                status: "Completed"
+                status: newStatus
             })
         });
 
