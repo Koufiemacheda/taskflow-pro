@@ -1,5 +1,6 @@
 const API_URL = "https://d2wm9oj5gl.execute-api.us-east-1.amazonaws.com";
 
+// Elements
 const taskInput = document.getElementById("taskInput");
 const createBtn = document.getElementById("createBtn");
 const taskList = document.getElementById("taskList");
@@ -9,43 +10,102 @@ const pendingCount = document.getElementById("pendingCount");
 const completedCount = document.getElementById("completedCount");
 const completionRate = document.getElementById("completionRate");
 
-// Load tasks when page opens
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+
+const loadingState = document.getElementById("loadingState");
+const emptyState = document.getElementById("emptyState");
+
+const toast = document.getElementById("toast");
+
+// App State
+let allTasks = [];
+
+// Startup
 window.onload = loadTasks;
 
-// Create Task
 createBtn.addEventListener("click", createTask);
 
+searchInput.addEventListener("input", filterTasks);
+
+statusFilter.addEventListener("change", filterTasks);
+
+// Toast Notification
+function showToast(message, type = "success") {
+
+    toast.textContent = message;
+
+    toast.className = "";
+
+    if (type === "success") {
+        toast.classList.add("toast-success");
+    }
+    else if (type === "danger") {
+        toast.classList.add("toast-danger");
+    }
+    else {
+        toast.classList.add("toast-info");
+    }
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
+
+}
+
+// Create Task
 async function createTask() {
 
     const taskName = taskInput.value.trim();
 
     if (!taskName) {
-        alert("Please enter a task");
+
+        showToast(
+            "Please enter a task name",
+            "danger"
+        );
+
         return;
     }
 
     try {
 
         await fetch(`${API_URL}/tasks`, {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 taskName: taskName
             })
+
         });
 
         taskInput.value = "";
 
+        showToast(
+            "Task Created Successfully"
+        );
+
         loadTasks();
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(error);
-        alert("Failed to create task");
+
+        showToast(
+            "Failed to create task",
+            "danger"
+        );
 
     }
+
 }
 
 // Load Tasks
@@ -53,42 +113,115 @@ async function loadTasks() {
 
     try {
 
-        const response = await fetch(`${API_URL}/tasks`);
+        loadingState.style.display = "block";
+        taskList.style.display = "none";
+        emptyState.style.display = "none";
 
-        const data = await response.json();
+        const response =
+            await fetch(`${API_URL}/tasks`);
 
-        const tasks = data.tasks || [];
+        const data =
+            await response.json();
 
-        // Dashboard calculations
-        const pending = tasks.filter(
-            task => task.status === "Pending"
-        ).length;
+        allTasks = data.tasks || [];
 
-        const completed = tasks.filter(
-            task => task.status === "Completed"
-        ).length;
+        updateDashboard(allTasks);
 
-        const total = tasks.length;
+        filterTasks();
 
-        const rate =
-            total === 0
-                ? 0
-                : Math.round(
-                    (completed / total) * 100
-                );
-
-        taskCount.textContent = total;
-        pendingCount.textContent = pending;
-        completedCount.textContent = completed;
-        completionRate.textContent = `${rate}%`;
-
-        displayTasks(tasks);
-
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(error);
 
+        showToast(
+            "Failed to load tasks",
+            "danger"
+        );
+
     }
+    finally {
+
+        loadingState.style.display = "none";
+
+    }
+
+}
+
+// Dashboard
+function updateDashboard(tasks) {
+
+    const total = tasks.length;
+
+    const pending =
+        tasks.filter(
+            task =>
+                task.status === "Pending"
+        ).length;
+
+    const completed =
+        tasks.filter(
+            task =>
+                task.status === "Completed"
+        ).length;
+
+    const rate =
+        total === 0
+            ? 0
+            : Math.round(
+                (completed / total) * 100
+            );
+
+    taskCount.textContent = total;
+
+    pendingCount.textContent = pending;
+
+    completedCount.textContent = completed;
+
+    completionRate.textContent =
+        `${rate}%`;
+
+}
+
+// Search + Filter
+function filterTasks() {
+
+    let filteredTasks = [...allTasks];
+
+    const searchValue =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const filterValue =
+        statusFilter.value;
+
+    // Search
+
+    if (searchValue) {
+
+        filteredTasks =
+            filteredTasks.filter(task =>
+                task.taskName
+                    .toLowerCase()
+                    .includes(searchValue)
+            );
+
+    }
+
+    // Status Filter
+
+    if (filterValue !== "all") {
+
+        filteredTasks =
+            filteredTasks.filter(task =>
+                task.status === filterValue
+            );
+
+    }
+
+    displayTasks(filteredTasks);
+
 }
 
 // Display Tasks
@@ -96,7 +229,20 @@ function displayTasks(tasks) {
 
     taskList.innerHTML = "";
 
-    // Pending first, completed last
+    if (tasks.length === 0) {
+
+        emptyState.style.display = "block";
+        taskList.style.display = "none";
+
+        return;
+
+    }
+
+    emptyState.style.display = "none";
+    taskList.style.display = "grid";
+
+    // Pending first
+
     tasks.sort((a, b) => {
 
         if (
@@ -119,33 +265,44 @@ function displayTasks(tasks) {
 
     tasks.forEach(task => {
 
-        const card = document.createElement("div");
+        const card =
+            document.createElement("div");
 
-        card.className = "task-card";
+        card.className =
+            "task-card";
 
         card.innerHTML = `
+
             <div class="task-header">
 
                 <div class="task-name">
-                    ${task.taskName}
+                    📋 ${task.taskName}
                 </div>
 
-                <span class="${task.status === 'Completed'
-                    ? 'completed'
-                    : 'pending'}">
+                <span class="${
+                    task.status === "Completed"
+                        ? "completed"
+                        : "pending"
+                }">
 
-                    ${task.status}
+                    ${
+                        task.status === "Completed"
+                            ? "✅ Completed"
+                            : "⏳ Pending"
+                    }
 
                 </span>
 
             </div>
 
             <div class="task-meta">
-                Created: ${task.createdAt}
+                Created:
+                ${task.createdAt}
             </div>
 
             <div class="task-meta">
-                Task ID: ${task.taskId.substring(0, 8)}...
+                Task ID:
+                ${task.taskId.substring(0,8)}...
             </div>
 
             <div class="task-actions">
@@ -157,21 +314,26 @@ function displayTasks(tasks) {
                         '${task.status}'
                     )">
 
-                    ${task.status === 'Completed'
-                        ? 'Undo'
-                        : 'Mark Complete'}
+                    ${
+                        task.status === "Completed"
+                            ? "Undo"
+                            : "Mark Complete"
+                    }
 
                 </button>
 
                 <button
                     class="delete-btn"
-                    onclick="deleteTask('${task.taskId}')">
+                    onclick="deleteTask(
+                        '${task.taskId}'
+                    )">
 
                     Delete
 
                 </button>
 
             </div>
+
         `;
 
         taskList.appendChild(card);
@@ -181,7 +343,10 @@ function displayTasks(tasks) {
 }
 
 // Toggle Status
-async function toggleTaskStatus(taskId, currentStatus) {
+async function toggleTaskStatus(
+    taskId,
+    currentStatus
+) {
 
     const newStatus =
         currentStatus === "Completed"
@@ -191,21 +356,37 @@ async function toggleTaskStatus(taskId, currentStatus) {
     try {
 
         await fetch(`${API_URL}/tasks`, {
+
             method: "PUT",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 taskId: taskId,
                 status: newStatus
             })
+
         });
+
+        showToast(
+            newStatus === "Completed"
+                ? "Task Completed"
+                : "Task Reopened"
+        );
 
         loadTasks();
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(error);
+
+        showToast(
+            "Update Failed",
+            "danger"
+        );
 
     }
 
@@ -214,27 +395,46 @@ async function toggleTaskStatus(taskId, currentStatus) {
 // Delete Task
 async function deleteTask(taskId) {
 
-    if (!confirm("Delete this task?")) {
+    if (
+        !confirm(
+            "Delete this task?"
+        )
+    ) {
         return;
     }
 
     try {
 
         await fetch(`${API_URL}/tasks`, {
+
             method: "DELETE",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 taskId: taskId
             })
+
         });
+
+        showToast(
+            "Task Deleted",
+            "danger"
+        );
 
         loadTasks();
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(error);
+
+        showToast(
+            "Delete Failed",
+            "danger"
+        );
 
     }
 

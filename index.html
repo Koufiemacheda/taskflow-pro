@@ -16,8 +16,16 @@
 
 <body>
 
+    <!-- Background Effects -->
+
     <div class="background-orb orb-1"></div>
     <div class="background-orb orb-2"></div>
+
+    <!-- Toast Notification -->
+
+    <div id="toast"></div>
+
+    <!-- Main Container -->
 
     <div class="container">
 
@@ -46,39 +54,60 @@
         <section class="stats-grid">
 
             <div class="stat-card total-card">
+
                 <h3>📋 Total Tasks</h3>
+
                 <span id="taskCount">0</span>
+
             </div>
 
             <div class="stat-card pending-card">
+
                 <h3>⏳ Pending</h3>
+
                 <span id="pendingCount">0</span>
+
             </div>
 
             <div class="stat-card completed-card">
+
                 <h3>✅ Completed</h3>
+
                 <span id="completedCount">0</span>
+
             </div>
 
             <div class="stat-card rate-card">
-                <h3>🔥 Completion</h3>
+
+                <h3>🔥 Completion Rate</h3>
+
                 <span id="completionRate">0%</span>
+
             </div>
 
         </section>
 
-        <!-- Create Task Section -->
+        <!-- Create Task Panel -->
 
         <section class="glass-panel create-panel">
 
-            <h2>Create New Task</h2>
+            <div class="panel-header">
+
+                <h2>Create New Task</h2>
+
+                <p>
+                    Add and manage your daily tasks efficiently.
+                </p>
+
+            </div>
 
             <div class="task-form">
 
                 <input
                     type="text"
                     id="taskInput"
-                    placeholder="Enter task name...">
+                    placeholder="Enter task name..."
+                >
 
                 <button id="createBtn">
                     Create Task
@@ -88,11 +117,75 @@
 
         </section>
 
+        <!-- Search & Filter Section -->
+
+        <section class="glass-panel filter-panel">
+
+            <div class="filter-grid">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search tasks..."
+                >
+
+                <select id="statusFilter">
+
+                    <option value="all">
+                        All Tasks
+                    </option>
+
+                    <option value="Pending">
+                        Pending
+                    </option>
+
+                    <option value="Completed">
+                        Completed
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
         <!-- Tasks Section -->
 
         <section class="tasks-section">
 
-            <h2>Your Tasks</h2>
+            <div class="section-header">
+
+                <h2>Your Tasks</h2>
+
+            </div>
+
+            <!-- Loading State -->
+
+            <div id="loadingState" class="loading-state">
+
+                <div class="spinner"></div>
+
+                <p>Loading Tasks...</p>
+
+            </div>
+
+            <!-- Empty State -->
+
+            <div id="emptyState" class="empty-state">
+
+                <div class="empty-icon">
+                    📋
+                </div>
+
+                <h3>No Tasks Yet</h3>
+
+                <p>
+                    Create your first task above to get started.
+                </p>
+
+            </div>
+
+            <!-- Task List -->
 
             <div id="taskList"></div>
 
@@ -107,19 +200,26 @@
             <div class="tech-stack">
 
                 <span>API Gateway</span>
+
                 <span>Lambda</span>
+
                 <span>DynamoDB</span>
+
                 <span>S3</span>
+
                 <span>CloudFront</span>
 
             </div>
+
+            <p class="footer-text">
+                TaskFlow Pro • Serverless Task Management Application
+            </p>
 
         </footer>
 
     </div>
 
     <script src="app.js"></script>
-    <div id="toast"></div>
 
 </body>
 
